@@ -20,7 +20,6 @@ TEMP_DIR = os.getenv("TEMP_DIR")
 OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
-
 @dataclass
 class ExtractPDFInput:
     s3_path: str
@@ -40,7 +39,6 @@ class CallLLMInput:
 class CallLLMOutput:
     content: str
 
-
 # --- Helper functions ---
 def get_s3_client():
     return boto3.client(
@@ -55,7 +53,6 @@ def parse_s3_path(s3_path: str):
     s3_path_no_scheme = s3_path.replace("s3://", "")
     bucket, _, key = s3_path_no_scheme.partition("/")
     return bucket, key
-
 
 # --- Step 1: Download PDF from S3 and Extract Text ---
 @activity.defn

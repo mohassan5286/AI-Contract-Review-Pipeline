@@ -1,9 +1,9 @@
 import asyncio
+import json
 from dataclasses import dataclass
 from datetime import timedelta
-import json
-import json_repair  # Make sure this is imported
 
+import json_repair
 from prompts import _REVISION_PROMPT, _SYNTHESIS_PROMPT
 from temporalio import workflow
 from temporalio.common import RetryPolicy
@@ -66,7 +66,6 @@ class ContractReviewWorkflow:
         self._approved_by = name
         return f"Assign Reviewer {name}"
 
-    # FIX: Use @workflow.update instead of @workflow.submit_decision
     @workflow.update
     async def submit_decision(self, review_decision:str, review_feedback:str) -> str:
         self._review_decision = review_decision
@@ -82,8 +81,7 @@ class ContractReviewWorkflow:
             raise ValueError("Review feedback is required for revise decision")        
 
     @workflow.run
-    async def run(self, params: ContractReviewInput) -> ContractReviewOutput:
-        
+    async def run(self, params: ContractReviewInput) -> ContractReviewOutput:    
         self._status = "extracting"
         workflow.logger.info(f"Fanning out to {len(params.s3_paths)} child workflows")
 
@@ -175,3 +173,4 @@ class ContractReviewWorkflow:
             sources=[s["s3_path"] for s in self._summaries],
             approved_by=self._approved_by
         )
+    

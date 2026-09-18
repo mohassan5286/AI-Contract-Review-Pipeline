@@ -15,7 +15,6 @@ TEMPORAL_HOST = os.getenv("TEMPORAL_HOST")
 TEMPORAL_NAMESPACE = os.getenv("TEMPORAL_NAMESPACE")
 TEMPORAL_TASK_QUEUE = os.getenv("TEMPORAL_TASK_QUEUE")
 
-
 # --- Helper functions ---
 async def get_client():
     return await Client.connect(

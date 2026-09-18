@@ -1,6 +1,5 @@
 import os
 import uuid
-from dataclasses import dataclass
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
@@ -14,33 +13,8 @@ TEMPORAL_NAMESPACE = os.getenv("TEMPORAL_NAMESPACE")
 TEMPORAL_PDF_PROCESS_TASK_QUEUE = os.getenv("TEMPORAL_PDF_PROCESS_TASK_QUEUE")
 TEMPORAL_CONTRACT_REVIEW_TASK_QUEUE = os.getenv("TEMPORAL_CONTRACT_REVIEW_TASK_QUEUE")
 
-# --- Temporal Models ---
-@dataclass
-class PDFProcessingWorkflowInput:
-    s3_input_path: str
-
-@dataclass
-class PDFProcessingWorkflowOutput:
-    s3_output_path: str
 
 # --- API Models ---
-class ProcessPDFExecuteRequest(BaseModel):
-    s3_path: str
-
-class ProcessPDFExecuteResponse(BaseModel):
-    workflow_id: str
-    result: PDFProcessingWorkflowOutput
-
-class ProcessPDFStartRequest(BaseModel):
-    s3_path: str
-
-class ProcessPDFStartResponse(BaseModel):
-    workflow_id: str
-
-class ProcessPDFStatusResponse(BaseModel):
-    workflow_id: str
-    status: str
-
 class StartReviewRequest(BaseModel):
     s3_paths: list[str]
     max_revisions: int = 2
@@ -67,8 +41,8 @@ async def get_client():
     )
 
 app = FastAPI(
-    title="PDF Extraction Client",
-    description="Submits PDF processing jobs to Temporal and returns the result.",
+    title="AI Contract Review API",
+    description="Orchestrates distributed AI legal contract reviews using Temporal. Features multi-document synthesis, automated risk assessment, and Human-in-the-Loop (HITL) revision cycles.",
     version="1.0.0",
 )
 
@@ -77,54 +51,6 @@ async def health():
     return {"status": "ok"}
 
 # --- Routes ---
-
-@app.post("/process-pdf/execute", response_model=ProcessPDFExecuteResponse)
-async def process_pdf_execute(request: ProcessPDFExecuteRequest):
-    client = await get_client()
-    workflow_id = f"pdf-pipeline-{uuid.uuid4()}"
-    
-    result = await client.execute_workflow(
-        "PDFProcessingWorkflow",
-        arg=PDFProcessingWorkflowInput(s3_input_path=request.s3_path),
-        id=workflow_id,
-        task_queue=TEMPORAL_PDF_PROCESS_TASK_QUEUE,
-    )
-
-    return ProcessPDFExecuteResponse(
-        workflow_id=workflow_id,
-        result=result
-    )
-
-@app.post("/process-pdf/start", response_model=ProcessPDFStartResponse)
-async def process_pdf_start(request: ProcessPDFStartRequest):
-    client = await get_client()
-    workflow_id = f"pdf-pipeline-{uuid.uuid4()}"
-    
-    await client.start_workflow(
-        "PDFProcessingWorkflow",
-        arg=PDFProcessingWorkflowInput(s3_input_path=request.s3_path),
-        id=workflow_id,
-        task_queue=TEMPORAL_PDF_PROCESS_TASK_QUEUE,
-    )
-
-    return ProcessPDFStartResponse(
-        workflow_id=workflow_id,
-    )
-
-@app.get("/process-pdf/status/{workflow_id}", response_model=ProcessPDFStatusResponse)
-async def process_pdf_status(workflow_id: str):
-    client = await get_client()
-    
-    handle = client.get_workflow_handle(workflow_id)
-    
-    desc = await handle.describe()
-    
-    return ProcessPDFStatusResponse(
-        workflow_id=workflow_id,
-        status=desc.status.name
-    )
-
-
 @app.post("/contract-review/start")
 async def start_contract_review(request: StartReviewRequest):
     
@@ -144,7 +70,6 @@ async def start_contract_review(request: StartReviewRequest):
 
     return StartReviewResponse(workflow_id=workflow_id)
 
-
 @app.get("/contract-review/{workflow_id}/status")
 async def get_review_status(workflow_id: str):
     client = await get_client()
@@ -152,14 +77,12 @@ async def get_review_status(workflow_id: str):
     status_result = await handle.query("get_status")
     return status_result
 
-
 @app.get("/contract-review/{workflow_id}/report")
 async def get_review_report(workflow_id: str):
     client = await get_client()
     handle = client.get_workflow_handle(workflow_id)
     report_result = await handle.query("get_report")
     return report_result
-
 
 @app.post("/contract-review/assign-reviewer")
 async def assign_reviewer(request: AssignRequest):
