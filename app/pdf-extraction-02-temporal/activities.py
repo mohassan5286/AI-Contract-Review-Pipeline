@@ -1,6 +1,5 @@
 import logging
 import os
-from venv import logger
 
 import pymupdf4llm
 from helpers import (

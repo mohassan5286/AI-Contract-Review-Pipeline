@@ -42,14 +42,6 @@ class UploadInput:
 class UploadOutput:
     s3_output_path: str
 
-@dataclass
-class PDFProcessingWorkflowInput:
-    s3_input_path: str
-
-@dataclass
-class PDFProcessingWorkflowOutput:
-    s3_output_path: str
-
 # --- Helper functions ---
 def get_s3_client():
     return boto3.client(
