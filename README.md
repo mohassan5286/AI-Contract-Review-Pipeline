@@ -93,9 +93,9 @@ Initiates a new parent workflow that runs child extraction workflows in parallel
 ```json
 {
   "s3_paths": [
-    "s3://temporal-dev/files/nda-innovate-consultpro.pdf",
-    "s3://temporal-dev/files/software-license-globalsoft.pdf",
-    "s3://temporal-dev/files/vendor-service-agreement.pdf"
+    "s3://my-bucket/contract-1.pdf",
+    "s3://my-bucket/contract-2.pdf",
+    "s3://my-bucket/contract-3.pdf"
   ],
   "max_revisions": 2
 }
@@ -123,8 +123,8 @@ Sends a Temporal Signal to assign a human reviewer without interrupting the work
 
 ```json
 {
-  "workflow_id": "contract-review-65db4d66-e606-4ac2-b8d2-cfcbfdb483fb",
-  "name": "Muhammad Hassan"
+  "workflow_id": "workflow-id",
+  "name": "Reviewer Name"
 }
 
 ```
@@ -150,8 +150,8 @@ Sends a Temporal Update containing human feedback, triggering a new synthesis st
 
 ```json
 {
-  "workflow_id": "contract-review-65db4d66-e606-4ac2-b8d2-cfcbfdb483fb",
-  "feedback": "Please focus specifically on the liability cap mismatch and conflicting breach notification windows."
+  "workflow_id": "workflow-id",
+  "feedback": "feedback-notes"
 }
 
 ```
@@ -168,7 +168,7 @@ Sends a Temporal Update to approve the final report, completing the Human-in-the
 
 ```json
 {
-  "workflow_id": "contract-review-65db4d66-e606-4ac2-b8d2-cfcbfdb483fb"
+  "workflow_id": "workflow-id"
 }
 
 ```
